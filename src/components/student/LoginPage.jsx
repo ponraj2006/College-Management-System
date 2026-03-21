@@ -158,13 +158,13 @@ function LoginPage({ onLogin, onAdminLogin }) {
                     </button>
                 </form>
 
-                <button className="admin-login-link" onClick={onAdminLogin}>
-                    <FaShieldAlt size={14} />
-                    <span>Admin Login</span>
-                </button>
-
                 <p className="login-footer-text">
                     © 2026 EduConnect &middot; College Management System
+                </p>
+                <p className="admin-subtle-link-text">
+                    <button className="admin-subtle-link" onClick={onAdminLogin}>
+                        Admin Access
+                    </button>
                 </p>
             </div>
         </div>

@@ -1,5 +1,22 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { HiOutlineCheck, HiOutlineX } from "react-icons/hi";
+
+const STATUSES = ["P", "A", "OD", "H"];
+
+const getStatusStyle = (status) => {
+    switch (status) {
+        case "P":  return { bg: "rgba(0,212,170,0.15)",  color: "#00d4aa", label: "Present"  };
+        case "A":  return { bg: "rgba(255,77,106,0.15)", color: "#ff4d6a", label: "Absent"   };
+        case "OD": return { bg: "rgba(108,99,255,0.15)", color: "#6c63ff", label: "On Duty"  };
+        case "H":  return { bg: "rgba(255,167,38,0.15)", color: "#ffa726", label: "Holiday"  };
+        default:   return { bg: "rgba(0,212,170,0.15)",  color: "#00d4aa", label: status     };
+    }
+};
+
+const nextStatus = (current) => {
+    const idx = STATUSES.indexOf(current);
+    return STATUSES[(idx + 1) % STATUSES.length];
+};
 
 export default function AdminStaffAttendance({ staffs, onMarkAttendance }) {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
@@ -10,7 +27,6 @@ export default function AdminStaffAttendance({ staffs, onMarkAttendance }) {
     const loadStaff = () => {
         const initial = {};
         staffs.forEach((s) => {
-            // Check if there's already attendance for this date
             const existing = s.attendanceHistory?.find((a) => a.date === selectedDate);
             initial[s.id] = existing ? existing.status : "P";
         });
@@ -22,42 +38,23 @@ export default function AdminStaffAttendance({ staffs, onMarkAttendance }) {
     const toggleAttendance = (id) => {
         setAttendance((prev) => ({
             ...prev,
-            [id]: prev[id] === "P" ? "A" : prev[id] === "A" ? "L" : "P",
+            [id]: nextStatus(prev[id] || "P"),
         }));
     };
 
-    const markAllPresent = () => {
+    const setBulkStatus = (status) => {
         const updated = {};
-        staffs.forEach((s) => { updated[s.id] = "P"; });
-        setAttendance(updated);
-    };
-
-    const markAllAbsent = () => {
-        const updated = {};
-        staffs.forEach((s) => { updated[s.id] = "A"; });
+        staffs.forEach((s) => { updated[s.id] = status; });
         setAttendance(updated);
     };
 
     const handleSubmit = () => {
-        if (onMarkAttendance) {
-            onMarkAttendance(selectedDate, attendance);
-        }
+        if (onMarkAttendance) onMarkAttendance(selectedDate, attendance);
         setSubmitted(true);
         setTimeout(() => setSubmitted(false), 3000);
     };
 
-    const getStatusStyle = (status) => {
-        switch (status) {
-            case "P": return { bg: "rgba(0,212,170,0.15)", color: "#00d4aa", label: "Present" };
-            case "A": return { bg: "rgba(255,77,106,0.15)", color: "#ff4d6a", label: "Absent" };
-            case "L": return { bg: "rgba(255,167,38,0.15)", color: "#ffa726", label: "Leave" };
-            default: return { bg: "rgba(108,99,255,0.15)", color: "#6c63ff", label: status };
-        }
-    };
-
-    const presentCount = Object.values(attendance).filter(v => v === "P").length;
-    const absentCount = Object.values(attendance).filter(v => v === "A").length;
-    const leaveCount = Object.values(attendance).filter(v => v === "L").length;
+    const countByStatus = (s) => Object.values(attendance).filter(v => v === s).length;
 
     return (
         <div className="dashboard-page fade-in">
@@ -87,9 +84,7 @@ export default function AdminStaffAttendance({ staffs, onMarkAttendance }) {
                         />
                     </div>
                     <div className="staff-filter-group" style={{ alignSelf: "flex-end" }}>
-                        <button className="staff-add-btn" onClick={loadStaff}>
-                            Load Staff
-                        </button>
+                        <button className="staff-add-btn" onClick={loadStaff}>Load Staff</button>
                     </div>
                 </div>
             </div>
@@ -101,12 +96,29 @@ export default function AdminStaffAttendance({ staffs, onMarkAttendance }) {
                             Staff Attendance • {selectedDate}
                         </h3>
                         <div className="staff-attendance-bulk-actions">
-                            <span className="attendance-summary-badge present">P: {presentCount}</span>
-                            <span className="attendance-summary-badge absent">A: {absentCount}</span>
-                            <span className="attendance-summary-badge leave">L: {leaveCount}</span>
-                            <button className="staff-bulk-btn present" onClick={markAllPresent}>All Present</button>
-                            <button className="staff-bulk-btn absent" onClick={markAllAbsent}>All Absent</button>
+                            <span className="attendance-summary-badge present">P: {countByStatus("P")}</span>
+                            <span className="attendance-summary-badge absent">A: {countByStatus("A")}</span>
+                            <span className="attendance-summary-badge onduty">OD: {countByStatus("OD")}</span>
+                            <span className="attendance-summary-badge holiday">H: {countByStatus("H")}</span>
+                            <button className="staff-bulk-btn present" onClick={() => setBulkStatus("P")}>All Present</button>
+                            <button className="staff-bulk-btn absent"  onClick={() => setBulkStatus("A")}>All Absent</button>
+                            <button className="staff-bulk-btn onduty"  onClick={() => setBulkStatus("OD")}>All On Duty</button>
+                            <button className="staff-bulk-btn holiday" onClick={() => setBulkStatus("H")}>All Holiday</button>
                         </div>
+                    </div>
+
+                    {/* Legend */}
+                    <div className="att-legend-bar" style={{ marginBottom: "16px" }}>
+                        {STATUSES.map(s => {
+                            const st = getStatusStyle(s);
+                            return (
+                                <span key={s} className="att-legend-item" style={{ color: st.color }}>
+                                    <span className="att-dot" style={{ background: st.color }}></span>
+                                    {st.label} ({s})
+                                </span>
+                            );
+                        })}
+                        <span className="att-legend-hint">Click a status to cycle: P → A → OD → H</span>
                     </div>
 
                     <div className="table-container">
@@ -142,12 +154,12 @@ export default function AdminStaffAttendance({ staffs, onMarkAttendance }) {
                                             <td>
                                                 <button
                                                     className="staff-att-toggle-large"
-                                                    style={{ background: style.bg, color: style.color, border: `1px solid ${style.color}30` }}
+                                                    style={{ background: style.bg, color: style.color, border: `1px solid ${style.color}40` }}
                                                     onClick={() => toggleAttendance(staff.id)}
-                                                    title="Click to toggle: P → A → L → P"
+                                                    title="Click to cycle: Present → Absent → On Duty → Holiday"
                                                 >
-                                                    {status === "P" ? <HiOutlineCheck size={16} /> : status === "A" ? <HiOutlineX size={16} /> : "🟡"}
                                                     <span>{style.label}</span>
+                                                    <span style={{ fontSize: "0.7rem", opacity: 0.7 }}>({status})</span>
                                                 </button>
                                             </td>
                                         </tr>
@@ -168,3 +180,4 @@ export default function AdminStaffAttendance({ staffs, onMarkAttendance }) {
         </div>
     );
 }
+

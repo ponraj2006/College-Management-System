@@ -3,6 +3,22 @@ import { HiOutlineCheck, HiOutlineX } from "react-icons/hi";
 import { departments, years, sections } from "../../data/staffStudentsData";
 
 const HOURS = ["Hour 1", "Hour 2", "Hour 3", "Hour 4", "Hour 5", "Hour 6"];
+const ATTENDANCE_STATUSES = ["P", "A", "OD", "H"];
+
+const getStatusStyle = (val) => {
+    switch (val) {
+        case "P": return { cls: "att-present", label: "Present", color: "#00d4aa" };
+        case "A": return { cls: "att-absent", label: "Absent", color: "#ff4d6a" };
+        case "OD": return { cls: "att-onduty", label: "On Duty", color: "#6c63ff" };
+        case "H": return { cls: "att-holiday", label: "Holiday", color: "#ffa726" };
+        default: return { cls: "att-present", label: "Present", color: "#00d4aa" };
+    }
+};
+
+const nextStatus = (current) => {
+    const idx = ATTENDANCE_STATUSES.indexOf(current);
+    return ATTENDANCE_STATUSES[(idx + 1) % ATTENDANCE_STATUSES.length];
+};
 
 export default function AttendanceMarking({ students }) {
     const [selectedDept, setSelectedDept] = useState(departments[0]);
@@ -21,14 +37,11 @@ export default function AttendanceMarking({ students }) {
         );
     }, [students, selectedDept, selectedYear, selectedSection]);
 
-    // Initialize attendance for new filter combo
     const initAttendance = () => {
         const initial = {};
         filteredStudents.forEach((s) => {
             initial[s.id] = {};
-            HOURS.forEach((h) => {
-                initial[s.id][h] = "P";
-            });
+            HOURS.forEach((h) => { initial[s.id][h] = "P"; });
         });
         setAttendance(initial);
         setSubmitted(false);
@@ -39,29 +52,16 @@ export default function AttendanceMarking({ students }) {
             ...prev,
             [studentId]: {
                 ...prev[studentId],
-                [hour]: prev[studentId]?.[hour] === "P" ? "A" : "P",
+                [hour]: nextStatus(prev[studentId]?.[hour] || "P"),
             },
         }));
     };
 
-    const markAllPresent = () => {
+    const setBulkStatus = (status) => {
         const updated = {};
         filteredStudents.forEach((s) => {
             updated[s.id] = {};
-            HOURS.forEach((h) => {
-                updated[s.id][h] = "P";
-            });
-        });
-        setAttendance(updated);
-    };
-
-    const markAllAbsent = () => {
-        const updated = {};
-        filteredStudents.forEach((s) => {
-            updated[s.id] = {};
-            HOURS.forEach((h) => {
-                updated[s.id][h] = "A";
-            });
+            HOURS.forEach((h) => { updated[s.id][h] = status; });
         });
         setAttendance(updated);
     };
@@ -95,60 +95,47 @@ export default function AttendanceMarking({ students }) {
                 <div className="staff-filters-bar">
                     <div className="staff-filter-group">
                         <label className="staff-filter-label">Department</label>
-                        <select
-                            className="staff-select"
-                            value={selectedDept}
-                            onChange={(e) => setSelectedDept(e.target.value)}
-                        >
-                            {departments.map((d) => (
-                                <option key={d} value={d}>{d}</option>
-                            ))}
+                        <select className="staff-select" value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)}>
+                            {departments.map((d) => <option key={d} value={d}>{d}</option>)}
                         </select>
                     </div>
-
                     <div className="staff-filter-group">
                         <label className="staff-filter-label">Year</label>
-                        <select
-                            className="staff-select"
-                            value={selectedYear}
-                            onChange={(e) => setSelectedYear(e.target.value)}
-                        >
-                            {years.map((y) => (
-                                <option key={y} value={y}>{y}</option>
-                            ))}
+                        <select className="staff-select" value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
+                            {years.map((y) => <option key={y} value={y}>{y}</option>)}
                         </select>
                     </div>
-
                     <div className="staff-filter-group">
                         <label className="staff-filter-label">Section</label>
-                        <select
-                            className="staff-select"
-                            value={selectedSection}
-                            onChange={(e) => setSelectedSection(e.target.value)}
-                        >
-                            {sections.map((sec) => (
-                                <option key={sec} value={sec}>{sec}</option>
-                            ))}
+                        <select className="staff-select" value={selectedSection} onChange={(e) => setSelectedSection(e.target.value)}>
+                            {sections.map((sec) => <option key={sec} value={sec}>{sec}</option>)}
                         </select>
                     </div>
-
                     <div className="staff-filter-group">
                         <label className="staff-filter-label">Date</label>
-                        <input
-                            type="date"
-                            className="staff-form-input"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                        />
+                        <input type="date" className="staff-form-input" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
                     </div>
-
                     <div className="staff-filter-group" style={{ alignSelf: "flex-end" }}>
-                        <button className="staff-add-btn" onClick={initAttendance}>
-                            Load Students
-                        </button>
+                        <button className="staff-add-btn" onClick={initAttendance}>Load Students</button>
                     </div>
                 </div>
             </div>
+
+            {/* Attendance Legend */}
+            {hasAttendanceData && hasStudents && (
+                <div className="att-legend-bar">
+                    {ATTENDANCE_STATUSES.map((s) => {
+                        const style = getStatusStyle(s);
+                        return (
+                            <span key={s} className={`att-legend-item att-badge-${style.cls}`}>
+                                <span className="att-dot" style={{ background: style.color }}></span>
+                                {style.label} ({s})
+                            </span>
+                        );
+                    })}
+                    <span className="att-legend-hint">Click cells to cycle status</span>
+                </div>
+            )}
 
             {/* Attendance Grid */}
             {hasAttendanceData && hasStudents && (
@@ -158,12 +145,10 @@ export default function AttendanceMarking({ students }) {
                             {selectedDept} • {selectedYear} • Section {selectedSection} • {selectedDate}
                         </h3>
                         <div className="staff-attendance-bulk-actions">
-                            <button className="staff-bulk-btn present" onClick={markAllPresent}>
-                                All Present
-                            </button>
-                            <button className="staff-bulk-btn absent" onClick={markAllAbsent}>
-                                All Absent
-                            </button>
+                            <button className="staff-bulk-btn present" onClick={() => setBulkStatus("P")}>All Present</button>
+                            <button className="staff-bulk-btn absent" onClick={() => setBulkStatus("A")}>All Absent</button>
+                            <button className="staff-bulk-btn onduty" onClick={() => setBulkStatus("OD")}>All On Duty</button>
+                            <button className="staff-bulk-btn holiday" onClick={() => setBulkStatus("H")}>All Holiday</button>
                         </div>
                     </div>
 
@@ -183,25 +168,19 @@ export default function AttendanceMarking({ students }) {
                                 {filteredStudents.map((student, idx) => (
                                     <tr key={student.id}>
                                         <td>{idx + 1}</td>
-                                        <td>
-                                            <span className="code-badge">{student.regNo}</span>
-                                        </td>
+                                        <td><span className="code-badge">{student.regNo}</span></td>
                                         <td>{student.name}</td>
                                         {HOURS.map((hour) => {
                                             const val = attendance[student.id]?.[hour] || "P";
+                                            const style = getStatusStyle(val);
                                             return (
                                                 <td key={hour} className="staff-attendance-cell">
                                                     <button
-                                                        className={`staff-att-toggle ${val === "P" ? "present" : "absent"}`}
+                                                        className={`staff-att-toggle ${style.cls}`}
                                                         onClick={() => toggleCell(student.id, hour)}
-                                                        title={val === "P" ? "Present — click to mark absent" : "Absent — click to mark present"}
+                                                        title={`${style.label} — click to change`}
                                                     >
-                                                        {val === "P" ? (
-                                                            <HiOutlineCheck size={16} />
-                                                        ) : (
-                                                            <HiOutlineX size={16} />
-                                                        )}
-                                                        <span>{val}</span>
+                                                        <span className="att-status-text">{val}</span>
                                                     </button>
                                                 </td>
                                             );
@@ -231,3 +210,5 @@ export default function AttendanceMarking({ students }) {
         </div>
     );
 }
+
+

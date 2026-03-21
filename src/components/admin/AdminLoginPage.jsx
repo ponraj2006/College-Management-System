@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaShieldAlt, FaEnvelope, FaLock, FaSignInAlt, FaArrowLeft } from "react-icons/fa";
+import { FaShieldAlt, FaEnvelope, FaLock, FaSignInAlt, FaUniversity } from "react-icons/fa";
 
 export default function AdminLoginPage({ onAdminLogin, onBackToMain }) {
     const [email, setEmail] = useState("");
@@ -42,19 +42,26 @@ export default function AdminLoginPage({ onAdminLogin, onBackToMain }) {
 
     return (
         <div className="login-page admin-login-page">
-            <div className="login-bg-orb login-bg-orb-1 admin-orb"></div>
-            <div className="login-bg-orb login-bg-orb-2 admin-orb"></div>
-            <div className="login-bg-orb login-bg-orb-3 admin-orb"></div>
+            {/* Gold/Amber orbs */}
+            <div className="login-bg-orb admin-gold-orb-1"></div>
+            <div className="login-bg-orb admin-gold-orb-2"></div>
+            <div className="login-bg-orb admin-gold-orb-3"></div>
 
             <div className="login-card admin-login-card">
+                {/* Secure Institution Badge */}
+                <div className="admin-institution-badge">
+                    <FaUniversity size={12} />
+                    <span>EduConnect — Secure Administration System</span>
+                </div>
+
                 <div className="login-header">
                     <div className="login-logo">
-                        <div className="login-logo-icon admin-logo-icon">
+                        <div className="login-logo-icon admin-gold-logo-icon">
                             <FaShieldAlt size={28} />
                         </div>
                     </div>
-                    <h1 className="login-title admin-title">Admin Portal</h1>
-                    <p className="login-subtitle">EduConnect Administration</p>
+                    <h1 className="login-title admin-gold-title">Administration</h1>
+                    <p className="login-subtitle admin-gold-subtitle">Authorised Personnel Only</p>
                 </div>
 
                 {loginError && (
@@ -64,12 +71,12 @@ export default function AdminLoginPage({ onAdminLogin, onBackToMain }) {
                 )}
 
                 <form className="login-form" onSubmit={handleSubmit} noValidate>
-                    <div className={`input-group ${errors.email ? "has-error" : ""}`}>
+                    <div className={`input-group admin-gold-input ${errors.email ? "has-error" : ""}`}>
                         <div className="input-icon"><FaEnvelope /></div>
                         <input
                             id="admin-email"
                             type="email"
-                            placeholder="Admin Email"
+                            placeholder="Admin Email Address"
                             value={email}
                             onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors(p => ({ ...p, email: "" })); }}
                             autoComplete="email"
@@ -77,12 +84,12 @@ export default function AdminLoginPage({ onAdminLogin, onBackToMain }) {
                         {errors.email && <span className="input-error">{errors.email}</span>}
                     </div>
 
-                    <div className={`input-group ${errors.password ? "has-error" : ""}`}>
+                    <div className={`input-group admin-gold-input ${errors.password ? "has-error" : ""}`}>
                         <div className="input-icon"><FaLock /></div>
                         <input
                             id="admin-password"
                             type="password"
-                            placeholder="Password"
+                            placeholder="Admin Password"
                             value={password}
                             onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors(p => ({ ...p, password: "" })); }}
                             autoComplete="current-password"
@@ -93,7 +100,7 @@ export default function AdminLoginPage({ onAdminLogin, onBackToMain }) {
                     <button
                         id="admin-login-submit"
                         type="submit"
-                        className={`login-submit-btn admin-submit-btn ${isSubmitting ? "submitting" : ""}`}
+                        className={`login-submit-btn admin-gold-submit-btn ${isSubmitting ? "submitting" : ""}`}
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? (
@@ -101,19 +108,14 @@ export default function AdminLoginPage({ onAdminLogin, onBackToMain }) {
                         ) : (
                             <>
                                 <FaSignInAlt />
-                                <span>Sign In as Admin</span>
+                                <span>Access Admin Portal</span>
                             </>
                         )}
                     </button>
                 </form>
 
-                <button className="admin-back-link" onClick={onBackToMain}>
-                    <FaArrowLeft size={14} />
-                    <span>Back to Student / Staff Login</span>
-                </button>
-
-                <p className="login-footer-text">
-                    © 2026 EduConnect &middot; Admin Portal
+                <p className="login-footer-text admin-gold-footer">
+                    🔒 Restricted Area · © 2026 EduConnect Administration
                 </p>
             </div>
         </div>

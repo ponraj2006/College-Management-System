@@ -14,17 +14,37 @@ import {
 } from "react-icons/hi";
 import ThemeToggle from "../ThemeToggle";
 
-const navItems = [
-    { id: "admin-dashboard", label: "Dashboard", icon: HiOutlineViewGrid },
-    { id: "admin-students", label: "Students", icon: HiOutlineUserGroup },
-    { id: "admin-staffs", label: "Staff", icon: HiOutlineAcademicCap },
-    { id: "admin-staff-attendance", label: "Staff Attendance", icon: HiOutlineClipboardCheck },
-    { id: "admin-staff-salary", label: "Staff Salary", icon: HiOutlineCurrencyRupee },
-    { id: "admin-fees", label: "Fees Management", icon: HiOutlineCreditCard },
-    { id: "admin-penalty", label: "Penalties", icon: HiOutlineExclamationCircle },
-    { id: "admin-bus", label: "Bus Students", icon: HiOutlineTruck },
-    { id: "admin-hostel", label: "Hostel Students", icon: HiOutlineHome },
-    { id: "admin-logins", label: "Student Logins", icon: HiOutlineLogin },
+const navSections = [
+    {
+        label: "📊 Overview",
+        items: [
+            { id: "admin-dashboard", label: "Dashboard", icon: HiOutlineViewGrid },
+        ],
+    },
+    {
+        label: "🎓 Students",
+        items: [
+            { id: "admin-students", label: "Students", icon: HiOutlineUserGroup },
+            { id: "admin-fees", label: "Fees Management", icon: HiOutlineCreditCard },
+            { id: "admin-penalty", label: "Penalties", icon: HiOutlineExclamationCircle },
+        ],
+    },
+    {
+        label: "👩‍🏫 Staff",
+        items: [
+            { id: "admin-staffs", label: "Staff Members", icon: HiOutlineAcademicCap },
+            { id: "admin-staff-attendance", label: "Staff Attendance", icon: HiOutlineClipboardCheck },
+            { id: "admin-staff-salary", label: "Staff Salary", icon: HiOutlineCurrencyRupee },
+        ],
+    },
+    {
+        label: "🚌 Special Groups",
+        items: [
+            { id: "admin-bus", label: "Bus Students", icon: HiOutlineTruck },
+            { id: "admin-hostel", label: "Hostel Students", icon: HiOutlineHome },
+            { id: "admin-logins", label: "Student Logins", icon: HiOutlineLogin },
+        ],
+    },
 ];
 
 export default function AdminSidebar({ activePage, onNavigate, onLogout }) {
@@ -50,17 +70,22 @@ export default function AdminSidebar({ activePage, onNavigate, onLogout }) {
                 </div>
             </div>
 
-            <nav className="nav-menu">
-                {navItems.map((item) => (
-                    <button
-                        key={item.id}
-                        className={`nav-item ${activePage === item.id ? "active admin-nav-active" : ""}`}
-                        onClick={() => onNavigate(item.id)}
-                    >
-                        <item.icon size={20} />
-                        <span>{item.label}</span>
-                        {activePage === item.id && <div className="active-indicator admin-indicator" />}
-                    </button>
+            <nav className="nav-menu admin-nav-grouped">
+                {navSections.map((section) => (
+                    <div key={section.label} className="admin-nav-section">
+                        <span className="admin-nav-section-label">{section.label}</span>
+                        {section.items.map((item) => (
+                            <button
+                                key={item.id}
+                                className={`nav-item ${activePage === item.id ? "active admin-nav-active" : ""}`}
+                                onClick={() => onNavigate(item.id)}
+                            >
+                                <item.icon size={20} />
+                                <span>{item.label}</span>
+                                {activePage === item.id && <div className="active-indicator admin-indicator" />}
+                            </button>
+                        ))}
+                    </div>
                 ))}
             </nav>
 
