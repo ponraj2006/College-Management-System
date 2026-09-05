@@ -215,26 +215,13 @@ The application will run locally using the development server.
 ---
 
 ## 📸 Screenshots
-
-Add screenshots of your application here:
-
-```text
-screenshots/
-├── login.png
-├── student-dashboard.png
-├── staff-dashboard.png
-└── admin-dashboard.png
-```
-
-You can display them in your README using:
-
-```markdown
+### Login Page
 ![Login Page](./screenshots/login.png)
-
+### Student Dashboard
 ![Student Dashboard](./screenshots/student-dashboard.png)
-
+### Admin Dashboard
 ![Admin Dashboard](./screenshots/admin-dashboard.png)
-```
+
 
 ---
 
